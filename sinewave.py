@@ -2,17 +2,21 @@
 import gym
 from gym.utils import seeding
 import numpy as np
+import time
+import math
 import pygame
 
 class mover(object):
     def __init__(self):
         # The Mover tracks position, velocity, and acceleration 
-        self.position = (0, 0)
-        self.velocity = (0, 0)
-        self.acceleration = (0, 0)
+        self.velocity = 0
         # The Mover's maximum speed
-        slef.topspeed = 10
+        self.topspeed = 2
+        self.time = time.time()
         
+    def update(self):
+        self.velocity = self.topspeed * math.sin((1/4)*(2*math.pi) + time.time()-self.time)
+        return self.velocity
         
 class SineWave(gym.Env):
     
@@ -36,6 +40,7 @@ class SineWave(gym.Env):
 
         length = 500
         self.history = np.zeros(length)
+        self.mover = mover()
         
         self.seed()
         self.viewer = None
@@ -54,7 +59,7 @@ class SineWave(gym.Env):
     def step(self, action):
         y0, y0_dot = self.state
         
-        dy = np.random.randint(3) - 1
+        dy = self.mover.update()
         y1 = y0 + dy
         
         self.history = np.concatenate([[y1], self.history[:self.history.size-1]])
