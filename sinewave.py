@@ -5,18 +5,25 @@ import numpy as np
 import time
 import math
 import pygame
+import threading
 
 class mover(object):
     def __init__(self):
         # The Mover tracks position, velocity, and acceleration 
         self.velocity = 0
+        self.position = 0
         # The Mover's maximum speed
-        self.topspeed = 2
-        self.time = time.time()
+        self.speed = 2
+        self.magnitude = 3
         
     def update(self):
-        self.velocity = self.topspeed * math.sin((1/4)*(2*math.pi) + time.time()-self.time)
-        return self.velocity
+        self.velocity = self.magnitude * math.sin((1/4)*(2*math.pi) + self.speed * time.time())
+        self.position += self.velocity
+        #print (self.position)
+        threading.Timer(1/60,self.update).start()
+        
+    def state(self):
+        return (self.position, self.velocity)
         
 class SineWave(gym.Env):
     
@@ -45,7 +52,10 @@ class SineWave(gym.Env):
         self.seed()
         self.viewer = None
         self.state = None
+        self.clock = pygame.time.Clock()
         
+        threading.Timer(1/60,self.mover.update).start()
+
     def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
@@ -59,8 +69,7 @@ class SineWave(gym.Env):
     def step(self, action):
         y0, y0_dot = self.state
         
-        dy = self.mover.update()
-        y1 = y0 + dy
+        y1, dy = self.mover.state()
         
         self.history = np.concatenate([[y1], self.history[:self.history.size-1]])
         
@@ -97,8 +106,6 @@ class SineWave(gym.Env):
         return np.array(self.state), reward, self.done, {}
     
     def render(self, mode='human'):
-        y = 0
-
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.done = True
