@@ -14,13 +14,13 @@ class mover(object):
         self.position = 0
         # The Mover's maximum speed
         self.speed = 2
-        self.magnitude = 3
+        self.magnitude = 50
         
     def update(self):
-        self.velocity = self.magnitude * math.sin((1/4)*(2*math.pi) + self.speed * time.time())
-        self.position += self.velocity
+        self.velocity = math.sin((1/4)*(2*math.pi) + self.speed * time.time())
+        self.position = self.magnitude * self.velocity
         #print (self.position)
-        threading.Timer(1/60,self.update).start()
+        threading.Timer(1/100,self.update).start()
         
     def state(self):
         return (self.position, self.velocity)
@@ -54,7 +54,7 @@ class SineWave(gym.Env):
         self.state = None
         self.clock = pygame.time.Clock()
         
-        threading.Timer(1/60,self.mover.update).start()
+        threading.Timer(1/100,self.mover.update).start()
 
     def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
